@@ -1,0 +1,4 @@
+[submodule "tools/ndstool"]
+	path = tools/ndstool
+	url = https://github.com/devkitPro/ndstool.git
+    ignore = dirty
