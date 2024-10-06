@@ -1,11 +1,18 @@
 # `tankensetto`
 
+<p align="center">
+    <img src="img/explorer_kit_global_link.png" alt="Explorer Kit icon"/>
+</p>
+
 `tankensetto` is a managed collection of utilities for extracting assets from
 Generation 4 Pokémon games into more common formats used by the `pret`
 decompilation projects.
 
 Currently, only [`pret/pokeplatinum`](https://github.com/pret/pokeplatinum) is
 supported.
+
+`tankensetto` takes its name from the Japanese name for the Explorer Kit in the
+Generation 4 Pokémon games: たんけんセット (lit. *Exploration Set*).
 
 ## Setup
 
