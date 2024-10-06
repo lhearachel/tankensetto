@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 """
-    tankensetto - A collection of data-mining utilities for DS Pokemon games.
+    tankensetto - A collection of data-mining utilities for DS Pokémon games.
     Copyright (C) 2024  lhearachel@proton.me
 
     This program is free software: you can redistribute it and/or modify
@@ -15,8 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-#!/usr/bin/env python
 
+import enum
 import pathlib
 import subprocess
 
@@ -49,43 +50,6 @@ class Tool:
             assert proc.returncode == 0
 
 
-class Knarc(Tool):
-    def __init__(self) -> None:
-        super().__init__(pathlib.Path("build/subprojects/knarc/knarc"), True)
-
-
-class NitroGfx(Tool):
-    def __init__(self) -> None:
-        super().__init__(pathlib.Path("build/subprojects/nitrogfx/nitrogfx"), True)
-
-
-class NDSTool(Tool):
-    def __init__(self) -> None:
-        """
-        Constructor.
-        """
-        super().__init__(pathlib.Path("tools/ndstool/ndstool"), False)
-
-    def extract(self, rom: pathlib.Path, dir: pathlib.Path) -> None:
-        """
-        Extract the contents of a ROM file to a directory.
-
-        Arguments:
-        rom -- ROM file to be extracted.
-        dir -- Directory for extracted contents.
-        """
-        dir.mkdir(parents=True, exist_ok=True)
-        self.run([
-            "-x",  rom,
-            "-9",  dir / "arm9.bin",
-            "-7",  dir / "arm7.bin",
-            "-y9", dir / "y9.bin",
-            "-y7", dir / "y7.bin",
-            "-d",  dir / "filesys",
-            "-y",  dir / "overlay",
-            "-t",  dir / "banner.bin",
-            "-h",  dir / "header.bin",
-        ])
-
-
-NDSTOOL = NDSTool()
+class Result(enum.IntEnum):
+    SUCCESS = enum.auto()
+    UNPACK_EXISTS = enum.auto()

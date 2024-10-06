@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
     tankensetto - A collection of data-mining utilities for DS Pokémon games.
     Copyright (C) 2024  lhearachel@proton.me
@@ -15,13 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-#!/usr/bin/env python
 
 import pathlib
 
 import click
 
-from tankensetto.tools import NDSTOOL
+from tankensetto.tools.nds import NDSTOOL
 
 
 @click.command()
@@ -30,15 +30,20 @@ from tankensetto.tools import NDSTOOL
     "-s", "--source-rom",
     prompt="Path to source ROM",
     type=pathlib.Path,
-    help="Source ROM to be asset-mined."
+    help="Source ROM to be asset-mined.",
 )
 @click.option(
     "-t", "--target-repo",
     prompt="Path to your project",
     type=pathlib.Path,
-    help="Target decomp project for dumping."
+    help="Target decomp project for dumping.",
 )
-def main(source_rom: pathlib.Path, target_repo: pathlib.Path):
+@click.option(
+    "-f", "--force",
+    is_flag=True,
+    default=False,
+)
+def main(source_rom: pathlib.Path, target_repo: pathlib.Path, force: bool):
     """
     A collection of data-mining utilities for DS Pokémon games.
 
@@ -47,5 +52,5 @@ def main(source_rom: pathlib.Path, target_repo: pathlib.Path):
     through extracting modified assets into the decomp project structure.
     """
     rom_contents = pathlib.Path(source_rom.name + '_contents')
-    NDSTOOL.extract(source_rom, rom_contents)
+    NDSTOOL.extract(source_rom, rom_contents, force)
 
