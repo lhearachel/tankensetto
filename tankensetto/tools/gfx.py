@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 """
-    tankensetto - A collection of data-mining utilities for DS Pokémon games.
-    Copyright (C) 2024  lhearachel@proton.me
+tankensetto - A collection of data-mining utilities for DS Pokémon games.
+Copyright (C) 2024  lhearachel@proton.me
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import abc
@@ -29,12 +29,14 @@ class GFX(abc.ABC):
     """
 
     @abc.abstractmethod
-    def ncgr_to_png(self,
-                    path_to_ncgr: pathlib.Path,
-                    path_to_png: pathlib.Path,
-                    path_to_nclr: pathlib.Path,
-                    pal_idx: int=0,
-                    extra_args: list=[]) -> tools.Result:
+    def ncgr_to_png(
+        self,
+        path_to_ncgr: pathlib.Path,
+        path_to_png: pathlib.Path,
+        path_to_nclr: pathlib.Path,
+        pal_idx: int = 0,
+        extra_args: list = [],
+    ) -> tools.Result:
         """
         Convert an NCGR to a PNG, using the given NCLR as its palette.
 
@@ -47,13 +49,14 @@ class GFX(abc.ABC):
         """
         pass
 
-
     @abc.abstractmethod
-    def nclr_to_pal(self,
-                    path_to_nclr: pathlib.Path,
-                    path_to_pal: pathlib.Path,
-                    bitdepth: int=0,
-                    extra_args: list=[]) -> tools.Result:
+    def nclr_to_pal(
+        self,
+        path_to_nclr: pathlib.Path,
+        path_to_pal: pathlib.Path,
+        bitdepth: int = 0,
+        extra_args: list = [],
+    ) -> tools.Result:
         """
         Convert an NCLR to a JASC PAL.
 
@@ -73,17 +76,19 @@ class NitroGFX(GFX, tools.Tool):
     def __init__(self, parent: pathlib.Path) -> None:
         super().__init__(pathlib.Path("build/subprojects/nitrogfx/nitrogfx"), parent)
 
-
-    def ncgr_to_png(self,
-                    path_to_ncgr: pathlib.Path,
-                    path_to_png: pathlib.Path,
-                    path_to_nclr: pathlib.Path,
-                    pal_idx: int=0,
-                    extra_args: list=[]) -> tools.Result:
+    def ncgr_to_png(
+        self,
+        path_to_ncgr: pathlib.Path,
+        path_to_png: pathlib.Path,
+        path_to_nclr: pathlib.Path,
+        pal_idx: int = 0,
+        extra_args: list = [],
+    ) -> tools.Result:
         args = [
             path_to_ncgr,
             path_to_png,
-            "-palette", path_to_nclr,
+            "-palette",
+            path_to_nclr,
         ]
 
         if pal_idx != 0:
@@ -94,12 +99,13 @@ class NitroGFX(GFX, tools.Tool):
         self.run(args)
         return tools.Result.SUCCESS
 
-
-    def nclr_to_pal(self,
-                    path_to_nclr: pathlib.Path,
-                    path_to_pal: pathlib.Path,
-                    bitdepth: int=0,
-                    extra_args: list=[]) -> tools.Result:
+    def nclr_to_pal(
+        self,
+        path_to_nclr: pathlib.Path,
+        path_to_pal: pathlib.Path,
+        bitdepth: int = 0,
+        extra_args: list = [],
+    ) -> tools.Result:
         args: list[str | pathlib.Path] = [
             path_to_nclr,
             path_to_pal,
