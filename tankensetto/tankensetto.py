@@ -28,7 +28,7 @@ from tankensetto.tools.narc import Knarc
 from tankensetto.tools.nds import NDSTOOL
 
 
-@click.command()
+@click.command(epilog=f"Possible values for ASSETS: {list(map(str, extractors.AssetExtractor))}")
 @click.help_option("-h", "--help")
 @click.option(
     "-s", "--source-rom",
