@@ -47,7 +47,7 @@ class Tool:
         Arguments:
         args -- additional args to the process
         """
-        with subprocess.Popen([self.exe, *args]) as proc:
+        with subprocess.Popen([self.exe, *args], stdout=subprocess.DEVNULL) as proc:
             proc.wait()
             assert proc.returncode == 0
 
