@@ -13,7 +13,7 @@ This tool assumes that you have installed all the dependencies required to
 build a `pret` decompilation project and that you have already compiled a
 matching ROM to verify your project setup.
 
-`tankensetto` requires a minimum of Python version 3.10.
+`tankensetto` requires a minimum of Python version 3.11.
 
 To create an executable, simply run the following command:
 
