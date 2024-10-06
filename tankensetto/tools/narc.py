@@ -40,26 +40,26 @@ class NARC(abc.ABC):
         pass
 
 
-class Knarc(tools.Tool):
+class Knarc(NARC, tools.Tool):
     """
     Implementation of NARC contract using lhearachel/knarc
     """
 
-    def __init__(self) -> None:
-        super().__init__(pathlib.Path("build/subprojects/knarc/knarc"), True)
+    def __init__(self, parent: pathlib.Path) -> None:
+        super().__init__(pathlib.Path("build/subprojects/knarc/knarc"), parent)
 
 
-    def unpack(self, narc: pathlib.Path, dir: pathlib.Path, force: bool=False) -> tools.Result:
-        if dir.exists() and not force:
+    def unpack(self,
+               path_to_narc: pathlib.Path,
+               unpack_dir: pathlib.Path,
+               force: bool=False) -> tools.Result:
+        if unpack_dir.exists() and not force:
             return tools.Result.UNPACK_EXISTS
 
-        dir.mkdir(parents=True, exist_ok=True)
+        unpack_dir.mkdir(parents=True, exist_ok=True)
         self.run([
-            "-d", dir,
-            "-u", narc,
+            "-d", unpack_dir,
+            "-u", path_to_narc,
         ])
 
         return tools.Result.SUCCESS
-
-
-KNARC = Knarc()

@@ -27,7 +27,9 @@ class Tool:
     Abstraction of an external executable tool for the data-mining process.
     """
 
-    def __init__(self, exe: pathlib.Path, in_proj: bool) -> None:
+    def __init__(self,
+                 exe: pathlib.Path,
+                 parent: pathlib.Path=pathlib.Path.cwd()) -> None:
         """
         Constructor.
 
@@ -35,8 +37,8 @@ class Tool:
         exe -- path component to the executable
         in_proj -- if True, then the given path is relative to the target project
         """
-        self.exe = exe
-        self.in_proj = in_proj
+        self.exe = parent / exe
+
 
     def run(self, args: list[str | pathlib.Path]) -> None:
         """

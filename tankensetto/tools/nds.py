@@ -43,30 +43,33 @@ class NDS(abc.ABC):
         pass
 
 
-class NDSTool(tools.Tool):
+class NDSTool(NDS, tools.Tool):
     """
     Implementation of NDS contract using devkitpro/ndstool
     """
 
     def __init__(self) -> None:
-        super().__init__(pathlib.Path("tools/ndstool/ndstool"), False)
+        super().__init__(pathlib.Path("tools/ndstool/ndstool"))
 
 
-    def extract(self, rom: pathlib.Path, dir: pathlib.Path, force: bool=False) -> tools.Result:
-        if dir.exists() and not force:
+    def extract(self,
+                path_to_rom: pathlib.Path,
+                unpack_dir: pathlib.Path,
+                force: bool=False) -> tools.Result:
+        if unpack_dir.exists() and not force:
             return tools.Result.UNPACK_EXISTS
 
-        dir.mkdir(parents=True, exist_ok=True)
+        unpack_dir.mkdir(parents=True, exist_ok=True)
         self.run([
-            "-x",  rom,
-            "-9",  dir / "arm9.bin",
-            "-7",  dir / "arm7.bin",
-            "-y9", dir / "y9.bin",
-            "-y7", dir / "y7.bin",
-            "-d",  dir / "filesys",
-            "-y",  dir / "overlay",
-            "-t",  dir / "banner.bin",
-            "-h",  dir / "header.bin",
+            "-x",  path_to_rom,
+            "-9",  unpack_dir / "arm9.bin",
+            "-7",  unpack_dir / "arm7.bin",
+            "-y9", unpack_dir / "y9.bin",
+            "-y7", unpack_dir / "y7.bin",
+            "-d",  unpack_dir / "filesys",
+            "-y",  unpack_dir / "overlay",
+            "-t",  unpack_dir / "banner.bin",
+            "-h",  unpack_dir / "header.bin",
         ])
 
         return tools.Result.SUCCESS

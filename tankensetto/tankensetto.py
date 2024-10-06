@@ -21,6 +21,10 @@ import pathlib
 
 import click
 
+from tankensetto import extractors, info
+from tankensetto.extractors import EXTRACTORS
+from tankensetto.tools.gfx import NitroGFX
+from tankensetto.tools.narc import Knarc
 from tankensetto.tools.nds import NDSTOOL
 
 
@@ -42,15 +46,34 @@ from tankensetto.tools.nds import NDSTOOL
     "-f", "--force",
     is_flag=True,
     default=False,
+    help="If specified, requested archives will be re-extracted."
 )
-def main(source_rom: pathlib.Path, target_repo: pathlib.Path, force: bool):
+@click.argument(
+    "assets",
+    nargs=-1,
+    type=extractors.AssetExtractor,
+)
+def main(source_rom: pathlib.Path,
+         target_repo: pathlib.Path,
+         force: bool,
+         assets: tuple[extractors.AssetExtractor]):
     """
     A collection of data-mining utilities for DS Pokémon games.
 
     This tool is aimed at prospective users of the pret decompilation projects
     who have an existing binary hacking project. It will guide such a user
     through extracting modified assets into the decomp project structure.
+
+    If any ASSETS are specified, then only the requested ASSETS will be
+    extracted.
     """
     rom_contents = pathlib.Path(source_rom.name + '_contents')
-    NDSTOOL.extract(source_rom, rom_contents, force)
+    extract_result = NDSTOOL.extract(source_rom, rom_contents, force)
+    info.echo_result(extract_result, source_rom.name, rom_contents.name)
 
+    knarc = Knarc(target_repo)
+    gfx = NitroGFX(target_repo)
+
+    to_extract = assets if assets else tuple(extractors.AssetExtractor)
+    for asset in to_extract:
+        EXTRACTORS[asset](knarc, gfx, rom_contents / 'filesys', target_repo, force)
