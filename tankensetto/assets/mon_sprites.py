@@ -33,13 +33,9 @@ from rich.progress import (
 
 from tankensetto import info
 from tankensetto.constants import pokemon
+from tankensetto.constants.narc_path import NARCPath
 from tankensetto.tools import gfx, narc
-
-
-POKEGRA_NARC = pathlib.Path("poketool/pokegra/pl_pokegra.narc")
-OTHERPOKE_NARC = pathlib.Path("poketool/pokegra/pl_otherpoke.narc")
-POKE_DATA_NARC = pathlib.Path("poketool/poke_edit/pl_poke_data.narc")
-HEIGHT_NARC = pathlib.Path("poketool/pokegra/height.narc")
+from tankensetto.util import full_stem
 
 
 MON_DIRS = list(pokemon.Species)
@@ -78,9 +74,9 @@ def extract_pokegra(
     project_root: pathlib.Path,
     force: bool,
 ):
-    pokegra_contents = rom_filesys_root / POKEGRA_NARC.parent / f"{POKEGRA_NARC.stem}_contents"
-    unpack_result = narc.unpack(rom_filesys_root / POKEGRA_NARC, pokegra_contents, force)
-    info.echo_result(unpack_result, POKEGRA_NARC.name, pokegra_contents.name)
+    pokegra_contents = rom_filesys_root / f"{full_stem(NARCPath.pokegra)}_contents"
+    unpack_result = narc.unpack(rom_filesys_root / NARCPath.pokegra, pokegra_contents, force)
+    info.echo_result(unpack_result, NARCPath.pokegra.name, pokegra_contents.name)
 
     res_pokemon_root = project_root / "res" / "pokemon"
     rich.print("Converting sprites...")
@@ -89,12 +85,12 @@ def extract_pokegra(
             j = i * 6
             mon_root = res_pokemon_root / species
 
-            f_back = pokegra_contents / f"pl_pokegra_{j:08}.NCGR"
-            m_back = pokegra_contents / f"pl_pokegra_{j+1:08}.NCGR"
-            f_front = pokegra_contents / f"pl_pokegra_{j+2:08}.NCGR"
-            m_front = pokegra_contents / f"pl_pokegra_{j+3:08}.NCGR"
-            normal_pal = pokegra_contents / f"pl_pokegra_{j+4:08}.NCLR"
-            shiny_pal = pokegra_contents / f"pl_pokegra_{j+5:08}.NCLR"
+            f_back = pokegra_contents / f"{NARCPath.pokegra.stem}_{j:08}.NCGR"
+            m_back = pokegra_contents / f"{NARCPath.pokegra.stem}_{j+1:08}.NCGR"
+            f_front = pokegra_contents / f"{NARCPath.pokegra.stem}_{j+2:08}.NCGR"
+            m_front = pokegra_contents / f"{NARCPath.pokegra.stem}_{j+3:08}.NCGR"
+            normal_pal = pokegra_contents / f"{NARCPath.pokegra.stem}_{j+4:08}.NCLR"
+            shiny_pal = pokegra_contents / f"{NARCPath.pokegra.stem}_{j+5:08}.NCLR"
 
             shutil.copy(f_back.with_suffix(".bin"), f_back)
             shutil.copy(m_back.with_suffix(".bin"), m_back)
