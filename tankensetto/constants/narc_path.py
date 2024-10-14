@@ -17,10 +17,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import enum
 import pathlib
 
 
-class NARCPath:
+class NARCPath(enum.Enum):
     """
     A listing of unpackable NARCs to their path in the ROM filesystem.
     """

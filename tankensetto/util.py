@@ -19,6 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pathlib
 
+from tankensetto import info
+from tankensetto.constants import narc_path
+from tankensetto.tools import narc
+
 
 def full_stem(path: pathlib.Path) -> pathlib.Path:
     """
@@ -27,3 +31,24 @@ def full_stem(path: pathlib.Path) -> pathlib.Path:
     e.g., full_stem("this/is/a/file.txt") -> "this/is/a/file"
     """
     return path.parent / path.stem
+
+
+def unpack_narc(
+    narc: narc.NARC,
+    path: narc_path.NARCPath,
+    rom_filesys_root: pathlib.Path,
+    force: bool = True,
+    echo: bool = True,
+) -> pathlib.Path:
+    """
+    Unpacks a NARC to a contents directory and optionally echoes the result.
+
+    Returns the path to the unpacked contents directory.
+    """
+    contents = rom_filesys_root / f"{full_stem(path.value)}_contents"
+    unpack_result = narc.unpack(rom_filesys_root / path.value, contents, force)
+
+    if echo:
+        info.echo_result(unpack_result, path.name, contents.name)
+
+    return contents
