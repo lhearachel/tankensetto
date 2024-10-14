@@ -28,5 +28,5 @@ class AssetExtractor(enum.StrEnum):
 
 
 EXTRACTORS: dict[AssetExtractor, typing.Callable] = {
-    AssetExtractor.mon_sprites: mon_sprites.extract_pokegra
+    AssetExtractor.mon_sprites: mon_sprites.extract
 }

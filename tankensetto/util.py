@@ -52,3 +52,18 @@ def unpack_narc(
         info.echo_result(unpack_result, path.name, contents.name)
 
     return contents
+
+
+def unpack_narcs(
+    narc: narc.NARC,
+    paths: list[narc_path.NARCPath],
+    rom_filesys_root: pathlib.Path,
+    force: bool = True,
+    echo: bool = True,
+) -> dict[narc_path.NARCPath, pathlib.Path]:
+    """
+    Unpack a list of NARCs to contents directories, optionally echoing each result.
+
+    Returns a mapping of input NARCs to their unpacked contents directories.
+    """
+    return {np: unpack_narc(narc, np, rom_filesys_root, force, echo) for np in paths}

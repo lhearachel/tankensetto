@@ -22,33 +22,25 @@ import pathlib
 import shutil
 
 import rich
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-)
 
-from tankensetto.constants import pokemon
-from tankensetto.constants.narc_path import NARCPath
+from tankensetto import info
+from tankensetto.constants import narc_path, pokemon
 from tankensetto.tools import gfx, narc
-from tankensetto.util import unpack_narc
+from tankensetto.util import unpack_narcs
 
 
 MON_DIRS = list(pokemon.Species)
 
 
-PROGRESS_BAR = Progress(
-    TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-    BarColumn(),
-    MofNCompleteColumn(),
-    TextColumn("•"),
-    TimeElapsedColumn(),
-    TextColumn("•"),
-    TimeRemainingColumn(),
-)
+def unpack_all(
+    narc: narc.NARC,
+    rom_filesys_root: pathlib.Path,
+    force: bool,
+) -> dict[narc_path.NARCPath, pathlib.Path]:
+    all_narcs = [
+        narc_path.NARCPath.pokegra,
+    ]
+    return unpack_narcs(narc, all_narcs, rom_filesys_root, force)
 
 
 def convert_ncgr(gfx: gfx.GFX, ncgr: pathlib.Path, nclr: pathlib.Path, png: pathlib.Path):
@@ -66,28 +58,24 @@ def convert_ncgr(gfx: gfx.GFX, ncgr: pathlib.Path, nclr: pathlib.Path, png: path
     )
 
 
-def extract_pokegra(
-    narc: narc.NARC,
+def convert_pokegra(
+    contents: pathlib.Path,
     gfx: gfx.GFX,
-    rom_filesys_root: pathlib.Path,
     project_root: pathlib.Path,
-    force: bool,
 ):
-    pokegra_contents = unpack_narc(narc, NARCPath.pokegra, rom_filesys_root, force)
-
     res_pokemon_root = project_root / "res" / "pokemon"
     rich.print("Converting sprites...")
-    with PROGRESS_BAR as p:
+    with info.PROGRESS_BAR as p:
         for i, species in p.track(enumerate(pokemon.Species), total=pokemon.MAX_SPECIES):
             j = i * 6
             mon_root = res_pokemon_root / species
 
-            f_back = pokegra_contents / f"{NARCPath.pokegra.value.stem}_{j:08}.NCGR"
-            m_back = pokegra_contents / f"{NARCPath.pokegra.value.stem}_{j+1:08}.NCGR"
-            f_front = pokegra_contents / f"{NARCPath.pokegra.value.stem}_{j+2:08}.NCGR"
-            m_front = pokegra_contents / f"{NARCPath.pokegra.value.stem}_{j+3:08}.NCGR"
-            normal_pal = pokegra_contents / f"{NARCPath.pokegra.value.stem}_{j+4:08}.NCLR"
-            shiny_pal = pokegra_contents / f"{NARCPath.pokegra.value.stem}_{j+5:08}.NCLR"
+            f_back = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j:08}.NCGR"
+            m_back = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+1:08}.NCGR"
+            f_front = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+2:08}.NCGR"
+            m_front = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+3:08}.NCGR"
+            normal_pal = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+4:08}.NCLR"
+            shiny_pal = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+5:08}.NCLR"
 
             shutil.copy(f_back.with_suffix(".bin"), f_back)
             shutil.copy(m_back.with_suffix(".bin"), m_back)
@@ -108,3 +96,15 @@ def extract_pokegra(
 
             gfx.nclr_to_pal(normal_pal, mon_root / "normal.pal", bitdepth=8)
             gfx.nclr_to_pal(shiny_pal, mon_root / "shiny.pal", bitdepth=8)
+
+
+def extract(
+    narc: narc.NARC,
+    gfx: gfx.GFX,
+    rom_filesys_root: pathlib.Path,
+    project_root: pathlib.Path,
+    force: bool,
+):
+    all_contents = unpack_all(narc, rom_filesys_root, force)
+
+    convert_pokegra(all_contents[narc_path.NARCPath.pokegra], gfx, project_root)
