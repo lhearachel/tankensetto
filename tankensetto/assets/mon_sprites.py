@@ -274,6 +274,28 @@ def convert_otherpoke(
                     gfx.nclr_to_pal(shiny, form_dir / "shiny.pal", bitdepth=8)
 
 
+def convert_poke_data(
+    contents: pathlib.Path,
+    project_root: pathlib.Path
+):
+    pass
+
+
+def convert_height(
+    contents: pathlib.Path,
+    project_root: pathlib.Path
+):
+    pass
+
+
+def convert_poke_icon(
+    contents: pathlib.Path,
+    gfx: gfx.GFX,
+    project_root: pathlib.Path
+):
+    pass
+
+
 def extract(
     narc: narc.NARC,
     gfx: gfx.GFX,
@@ -285,3 +307,6 @@ def extract(
 
     convert_pokegra(all_contents[narc_path.NARCPath.pokegra], gfx, project_root)
     convert_otherpoke(all_contents[narc_path.NARCPath.otherpoke], gfx, project_root)
+    convert_poke_data(all_contents[narc_path.NARCPath.poke_data], project_root)
+    convert_height(all_contents[narc_path.NARCPath.height], project_root)
+    convert_poke_icon(all_contents[narc_path.NARCPath.poke_icon], gfx, project_root)

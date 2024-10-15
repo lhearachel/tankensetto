@@ -30,3 +30,4 @@ class NARCPath(enum.Enum):
     otherpoke = pathlib.Path("poketool/pokegra/pl_otherpoke.narc")
     poke_data = pathlib.Path("poketool/poke_edit/pl_poke_data.narc")
     height = pathlib.Path("poketool/pokegra/height.narc")
+    poke_icon = pathlib.Path("poketool/icongra/pl_poke_icon.narc")
