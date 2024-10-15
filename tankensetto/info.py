@@ -32,15 +32,16 @@ from rich.progress import (
 from tankensetto import tools
 
 
-PROGRESS_BAR = Progress(
-    TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-    BarColumn(),
-    MofNCompleteColumn(),
-    TextColumn("•"),
-    TimeElapsedColumn(),
-    TextColumn("•"),
-    TimeRemainingColumn(),
-)
+def progress() -> Progress: 
+    return Progress(
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TextColumn("•"),
+        TimeElapsedColumn(),
+        TextColumn("•"),
+        TimeRemainingColumn(),
+    )
 
 
 def echo_result(result: tools.Result, src: str | pathlib.Path, dir: str | pathlib.Path) -> None:
