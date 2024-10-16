@@ -27,6 +27,7 @@ import rich
 
 from tankensetto import info
 from tankensetto.constants import pokemon
+from tankensetto.constants import narc_path
 from tankensetto.constants.narc_path import NARCPath
 from tankensetto.tools import gfx, narc
 from tankensetto.util import le_int, sint8, unpack_narcs
@@ -38,6 +39,7 @@ class AltFormSpriteSet:
     shiny_pal: int
     back: int
     front: int
+    icon: int | None = None
 
 
 MON_DIRS = list(pokemon.Species)
@@ -45,39 +47,39 @@ MON_DIRS = list(pokemon.Species)
 OTHERPOKE_FILES: dict[pokemon.Species, dict[str, AltFormSpriteSet]] = {
     pokemon.Species.deoxys: {
         "base": AltFormSpriteSet(154, 155, 0, 1),
-        "attack": AltFormSpriteSet(154, 155, 2, 3),
-        "defense": AltFormSpriteSet(154, 155, 4, 5),
-        "speed": AltFormSpriteSet(154, 155, 6, 7),
+        "attack": AltFormSpriteSet(154, 155, 2, 3, 2),
+        "defense": AltFormSpriteSet(154, 155, 4, 5, 3),
+        "speed": AltFormSpriteSet(154, 155, 6, 7, 4),
     },
     pokemon.Species.unown: {
         "base": AltFormSpriteSet(156, 157, 8, 9),
-        "b": AltFormSpriteSet(156, 157, 10, 11),
-        "c": AltFormSpriteSet(156, 157, 12, 13),
-        "d": AltFormSpriteSet(156, 157, 14, 15),
-        "e": AltFormSpriteSet(156, 157, 16, 17),
-        "f": AltFormSpriteSet(156, 157, 18, 19),
-        "g": AltFormSpriteSet(156, 157, 20, 21),
-        "h": AltFormSpriteSet(156, 157, 22, 23),
-        "i": AltFormSpriteSet(156, 157, 24, 25),
-        "j": AltFormSpriteSet(156, 157, 26, 27),
-        "k": AltFormSpriteSet(156, 157, 28, 29),
-        "l": AltFormSpriteSet(156, 157, 30, 31),
-        "m": AltFormSpriteSet(156, 157, 32, 33),
-        "n": AltFormSpriteSet(156, 157, 34, 35),
-        "o": AltFormSpriteSet(156, 157, 36, 37),
-        "p": AltFormSpriteSet(156, 157, 38, 39),
-        "q": AltFormSpriteSet(156, 157, 40, 41),
-        "r": AltFormSpriteSet(156, 157, 42, 43),
-        "s": AltFormSpriteSet(156, 157, 44, 45),
-        "t": AltFormSpriteSet(156, 157, 46, 47),
-        "u": AltFormSpriteSet(156, 157, 48, 49),
-        "v": AltFormSpriteSet(156, 157, 50, 51),
-        "w": AltFormSpriteSet(156, 157, 52, 53),
-        "x": AltFormSpriteSet(156, 157, 54, 55),
-        "y": AltFormSpriteSet(156, 157, 56, 57),
-        "z": AltFormSpriteSet(156, 157, 58, 59),
-        "exc": AltFormSpriteSet(156, 157, 60, 61),
-        "que": AltFormSpriteSet(156, 157, 62, 63),
+        "b": AltFormSpriteSet(156, 157, 10, 11, 6),
+        "c": AltFormSpriteSet(156, 157, 12, 13, 7),
+        "d": AltFormSpriteSet(156, 157, 14, 15, 8),
+        "e": AltFormSpriteSet(156, 157, 16, 17, 9),
+        "f": AltFormSpriteSet(156, 157, 18, 19, 10),
+        "g": AltFormSpriteSet(156, 157, 20, 21, 11),
+        "h": AltFormSpriteSet(156, 157, 22, 23, 12),
+        "i": AltFormSpriteSet(156, 157, 24, 25, 13),
+        "j": AltFormSpriteSet(156, 157, 26, 27, 14),
+        "k": AltFormSpriteSet(156, 157, 28, 29, 15),
+        "l": AltFormSpriteSet(156, 157, 30, 31, 16),
+        "m": AltFormSpriteSet(156, 157, 32, 33, 17),
+        "n": AltFormSpriteSet(156, 157, 34, 35, 18),
+        "o": AltFormSpriteSet(156, 157, 36, 37, 19),
+        "p": AltFormSpriteSet(156, 157, 38, 39, 20),
+        "q": AltFormSpriteSet(156, 157, 40, 41, 21),
+        "r": AltFormSpriteSet(156, 157, 42, 43, 22),
+        "s": AltFormSpriteSet(156, 157, 44, 45, 23),
+        "t": AltFormSpriteSet(156, 157, 46, 47, 24),
+        "u": AltFormSpriteSet(156, 157, 48, 49, 25),
+        "v": AltFormSpriteSet(156, 157, 50, 51, 26),
+        "w": AltFormSpriteSet(156, 157, 52, 53, 27),
+        "x": AltFormSpriteSet(156, 157, 54, 55, 28),
+        "y": AltFormSpriteSet(156, 157, 56, 57, 29),
+        "z": AltFormSpriteSet(156, 157, 58, 59, 30),
+        "exc": AltFormSpriteSet(156, 157, 60, 61, 31),
+        "que": AltFormSpriteSet(156, 157, 62, 63, 32),
     },
     pokemon.Species.castform: {
         "base": AltFormSpriteSet(158, 162, 64, 68),
@@ -87,21 +89,21 @@ OTHERPOKE_FILES: dict[pokemon.Species, dict[str, AltFormSpriteSet]] = {
     },
     pokemon.Species.burmy: {
         "base": AltFormSpriteSet(166, 167, 72, 73),
-        "sandy": AltFormSpriteSet(168, 169, 74, 75),
-        "trash": AltFormSpriteSet(170, 171, 76, 77),
+        "sandy": AltFormSpriteSet(168, 169, 74, 75, 33),
+        "trash": AltFormSpriteSet(170, 171, 76, 77, 34),
     },
     pokemon.Species.wormadam: {
         "base": AltFormSpriteSet(172, 173, 78, 79),
-        "sandy": AltFormSpriteSet(174, 175, 80, 81),
-        "trash": AltFormSpriteSet(176, 177, 82, 83),
+        "sandy": AltFormSpriteSet(174, 175, 80, 81, 35),
+        "trash": AltFormSpriteSet(176, 177, 82, 83, 36),
     },
     pokemon.Species.shellos: {
         "base": AltFormSpriteSet(178, 179, 84, 86),
-        "east_sea": AltFormSpriteSet(180, 181, 85, 87),
+        "east_sea": AltFormSpriteSet(180, 181, 85, 87, 37),
     },
     pokemon.Species.gastrodon: {
         "base": AltFormSpriteSet(182, 183, 88, 90),
-        "east_sea": AltFormSpriteSet(184, 185, 89, 91),
+        "east_sea": AltFormSpriteSet(184, 185, 89, 91, 38),
     },
     pokemon.Species.cherrim: {
         "base": AltFormSpriteSet(186, 188, 92, 94),
@@ -130,19 +132,19 @@ OTHERPOKE_FILES: dict[pokemon.Species, dict[str, AltFormSpriteSet]] = {
     # pokemon.Species.egg: {}, -- special handling
     pokemon.Species.shaymin: {
         "base": AltFormSpriteSet(228, 229, 134, 135),
-        "sky": AltFormSpriteSet(230, 231, 136, 137),
+        "sky": AltFormSpriteSet(230, 231, 136, 137, 40),
     },
     pokemon.Species.rotom: {
         "base": AltFormSpriteSet(232, 233, 138, 139),
-        "heat": AltFormSpriteSet(234, 235, 140, 141),
-        "wash": AltFormSpriteSet(236, 237, 142, 143),
-        "frost": AltFormSpriteSet(238, 239, 144, 145),
-        "fan": AltFormSpriteSet(240, 241, 146, 147),
-        "mow": AltFormSpriteSet(242, 243, 148, 149),
+        "heat": AltFormSpriteSet(234, 235, 140, 141, 41),
+        "wash": AltFormSpriteSet(236, 237, 142, 143, 42),
+        "frost": AltFormSpriteSet(238, 239, 144, 145, 43),
+        "fan": AltFormSpriteSet(240, 241, 146, 147, 44),
+        "mow": AltFormSpriteSet(242, 243, 148, 149, 45),
     },
     pokemon.Species.giratina: {
         "base": AltFormSpriteSet(244, 245, 150, 151),
-        "origin": AltFormSpriteSet(246, 247, 152, 153),
+        "origin": AltFormSpriteSet(246, 247, 152, 153, 39),
     },
 }
 
@@ -157,6 +159,7 @@ def unpack_all(
         NARCPath.otherpoke,
         NARCPath.height,
         NARCPath.poke_data,
+        NARCPath.poke_icon,
     ]
     return unpack_narcs(narc, all_narcs, rom_filesys_root, force)
 
@@ -254,20 +257,51 @@ def convert_sprite_data(
         json.dump(sprite_data_json, f, indent=4, ensure_ascii=False)
 
 
+def convert_icon(
+    contents: pathlib.Path,
+    gfx: gfx.GFX,
+    dest_root: pathlib.Path,
+    i: int,
+    pal_nclr: pathlib.Path,
+    pal_table: list[int],
+):
+    file_idx = i + 7
+    pal_idx = pal_table[i] + 1
+
+    ncgr = contents / f"{narc_path.NARCPath.poke_icon.value.stem}_{file_idx:08}.NCGR"
+    shutil.copy(ncgr.with_suffix(".bin"), ncgr)
+
+    gfx.ncgr_to_png(ncgr, dest_root / "icon.png", pal_nclr, pal_idx, ["-width", "4"])
+
+
 def convert_base_forms(
     contents: dict[NARCPath, pathlib.Path],
     gfx: gfx.GFX,
     project_root: pathlib.Path,
+    icon_pal_file: pathlib.Path,
+    icon_pal_table: list[int],
 ):
     """
     Converts entries for base form sprites and additional sprite data (i.e., height offsets,
     animation frames, and shadow size).
     """
     res_pokemon_root = project_root / "res" / "pokemon"
+    shared_root = res_pokemon_root / ".shared"
     pokegra_contents = contents[NARCPath.pokegra]
+    poke_icon_contents = contents[NARCPath.poke_icon]
     height_contents = contents[NARCPath.height]
     poke_data_bin_f = contents[NARCPath.poke_data] / f"{NARCPath.poke_data.value.stem}_00000000.bin"
     poke_data_bin = open(poke_data_bin_f, "rb").read()
+
+    icon_stem = NARCPath.poke_icon.value.stem
+
+    for i in range(3):
+        icon_nanr = poke_icon_contents / f"{icon_stem}_{(i*2)+1:08}.NANR"
+        icon_ncer = poke_icon_contents / f"{icon_stem}_{(i*2)+2:08}.NCER"
+        shutil.copy(icon_nanr.with_suffix(".bin"), icon_nanr)
+        shutil.copy(icon_ncer.with_suffix(".bin"), icon_ncer)
+        gfx.ncer_to_json(icon_ncer, shared_root / f"{icon_stem}_cell_{i+1:02}.json")
+        gfx.nanr_to_json(icon_nanr, shared_root / f"{icon_stem}_anim_{i+1:02}.json")
 
     rich.print("Converting base form sprites...")
     with info.progress() as p:
@@ -275,23 +309,30 @@ def convert_base_forms(
             mon_root = res_pokemon_root / species
             convert_sprite(pokegra_contents, gfx, mon_root, i)
             convert_sprite_data(height_contents, poke_data_bin, mon_root, i)
+            convert_icon(poke_icon_contents, gfx, mon_root, i, icon_pal_file, icon_pal_table)
 
 
 def convert_alt_forms(
-    contents: pathlib.Path,
+    contents: dict[NARCPath, pathlib.Path],
     gfx: gfx.GFX,
     project_root: pathlib.Path,
+    icon_pal_file: pathlib.Path,
+    icon_pal_table: list[int],
 ):
     res_pokemon_root = project_root / "res" / "pokemon"
+    otherpoke_contents = contents[NARCPath.otherpoke]
+    poke_icon_contents = contents[NARCPath.poke_icon]
     egg_root = res_pokemon_root / "egg"
     shared_root = res_pokemon_root / ".shared"
 
     rich.print("Converting alt form sprites...")
 
-    egg_base = contents / f"{NARCPath.otherpoke.value.stem}_00000132.NCGR"
-    egg_manaphy = contents / f"{NARCPath.otherpoke.value.stem}_00000133.NCGR"
-    egg_base_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000226.NCLR"
-    egg_manaphy_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000227.NCLR"
+    otherpoke_stem = NARCPath.otherpoke.value.stem
+
+    egg_base = otherpoke_contents / f"{otherpoke_stem}_00000132.NCGR"
+    egg_manaphy = otherpoke_contents / f"{otherpoke_stem}_00000133.NCGR"
+    egg_base_pal = otherpoke_contents / f"{otherpoke_stem}_00000226.NCLR"
+    egg_manaphy_pal = otherpoke_contents / f"{otherpoke_stem}_00000227.NCLR"
     shutil.copy(egg_base.with_suffix(".bin"), egg_base)
     shutil.copy(egg_manaphy.with_suffix(".bin"), egg_manaphy)
     shutil.copy(egg_base_pal.with_suffix(".bin"), egg_base_pal)
@@ -301,10 +342,26 @@ def convert_alt_forms(
     convert_ncgr(gfx, egg_manaphy, egg_manaphy_pal, egg_root / "forms" / "manaphy" / "front.png")
     gfx.nclr_to_pal(egg_base_pal, egg_root / "normal.pal", bitdepth=8)
     gfx.nclr_to_pal(egg_manaphy_pal, egg_root / "forms" / "manaphy" / "normal.pal", bitdepth=8)
+    convert_icon(
+        poke_icon_contents,
+        gfx,
+        egg_root,
+        pokemon.MAX_SPECIES + 0,
+        icon_pal_file,
+        icon_pal_table,
+    )
+    convert_icon(
+        poke_icon_contents,
+        gfx,
+        egg_root / "forms" / "manaphy",
+        pokemon.MAX_SPECIES + 1,
+        icon_pal_file,
+        icon_pal_table,
+    )
 
-    sub_back = contents / f"{NARCPath.otherpoke.value.stem}_00000248.NCGR"
-    sub_front = contents / f"{NARCPath.otherpoke.value.stem}_00000249.NCGR"
-    sub_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000250.NCLR"
+    sub_back = otherpoke_contents / f"{otherpoke_stem}_00000248.NCGR"
+    sub_front = otherpoke_contents / f"{otherpoke_stem}_00000249.NCGR"
+    sub_pal = otherpoke_contents / f"{otherpoke_stem}_00000250.NCLR"
     shutil.copy(sub_back.with_suffix(".bin"), sub_back)
     shutil.copy(sub_front.with_suffix(".bin"), sub_front)
     shutil.copy(sub_pal.with_suffix(".bin"), sub_pal)
@@ -313,8 +370,8 @@ def convert_alt_forms(
     convert_ncgr(gfx, sub_front, sub_pal, shared_root / "substitute_front.png")
     gfx.nclr_to_pal(sub_pal, shared_root / "substitute.pal", bitdepth=8)
 
-    shadows_img = contents / f"{NARCPath.otherpoke.value.stem}_00000251.NCGR"
-    shadows_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000252.NCLR"
+    shadows_img = otherpoke_contents / f"{otherpoke_stem}_00000251.NCGR"
+    shadows_pal = otherpoke_contents / f"{otherpoke_stem}_00000252.NCLR"
     shutil.copy(shadows_img.with_suffix(".bin"), shadows_img)
     shutil.copy(shadows_pal.with_suffix(".bin"), shadows_pal)
 
@@ -329,10 +386,10 @@ def convert_alt_forms(
             for form, sprites in forms.items():
                 form_dir = mon_root / form
 
-                back = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.back:08}.NCGR"
-                front = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.front:08}.NCGR"
-                normal = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.normal_pal:08}.NCLR"
-                shiny = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.shiny_pal:08}.NCLR"
+                back = otherpoke_contents / f"{otherpoke_stem}_{sprites.back:08}.NCGR"
+                front = otherpoke_contents / f"{otherpoke_stem}_{sprites.front:08}.NCGR"
+                normal = otherpoke_contents / f"{otherpoke_stem}_{sprites.normal_pal:08}.NCLR"
+                shiny = otherpoke_contents / f"{otherpoke_stem}_{sprites.shiny_pal:08}.NCLR"
 
                 shutil.copy(back.with_suffix(".bin"), back)
                 shutil.copy(front.with_suffix(".bin"), front)
@@ -348,6 +405,48 @@ def convert_alt_forms(
                     gfx.nclr_to_pal(normal, form_dir / "normal.pal", bitdepth=8)
                     gfx.nclr_to_pal(shiny, form_dir / "shiny.pal", bitdepth=8)
 
+                if sprites.icon:
+                    idx = pokemon.MAX_SPECIES + sprites.icon
+                    convert_icon(
+                        poke_icon_contents, gfx, form_dir, idx, icon_pal_file, icon_pal_table
+                    )
+
+
+def convert_icon_palettes(project_root: pathlib.Path, icon_pal_table: list[int]):
+    lines = ["    [SPECIES_NONE]".ljust(29) + f" = {icon_pal_table[0]},\n"]
+    for i, species in enumerate(pokemon.Species):
+        if i == 0:
+            continue
+
+        assign = f"    [SPECIES_{species.upper()}]".ljust(29)
+        lines.append(f"{assign} = {icon_pal_table[i]},\n")
+
+
+    alt_form_icon_order = { 0: 'egg', 1: 'manaphy_egg', 5: 'unown_a', }
+    for species, forms in OTHERPOKE_FILES.items():
+        for form, sprites in forms.items():
+            if not sprites.icon:
+                continue
+
+            alt_form_icon_order[sprites.icon] = f"{species.value}_{form}"
+
+    for i, (_, v) in enumerate(sorted(alt_form_icon_order.items())):
+        assign = f"    [ICON_{v.upper()}]".ljust(29)
+        lines.append(f"{assign} = {icon_pal_table[pokemon.MAX_SPECIES + i]},\n")
+
+    lines.extend(['};\n', '// clang-format off']) # add these manually
+
+    with open(project_root / 'include' / 'data' / 'pokeicon_palettes.h', 'r+') as pal_file:
+        all_lines = pal_file.readlines()
+        pal_file.seek(0)
+
+        for i, line in enumerate(all_lines):
+            if "sPokemonIconPaletteIndex[] = {" in line:
+                all_lines = all_lines[:i+1]
+                break
+        all_lines.extend(lines)
+        pal_file.writelines(all_lines)
+
 
 def extract(
     narc: narc.NARC,
@@ -358,5 +457,16 @@ def extract(
 ):
     all_contents = unpack_all(narc, rom_filesys_root, force)
 
-    convert_base_forms(all_contents, gfx, project_root)
-    convert_alt_forms(all_contents[NARCPath.otherpoke], gfx, project_root)
+    icon_pal_tbl = []
+    with open(rom_filesys_root.parent / "arm9.bin", "rb") as arm9:
+        arm9.seek(0xF0780, 0)
+        icon_pal_tbl = [int(b) for b in arm9.read(0x21C)]
+
+    icon_stem = NARCPath.poke_icon.value.stem
+    icon_pal = all_contents[NARCPath.poke_icon] / f"{icon_stem}_00000000.NCLR"
+    shutil.copy(icon_pal.with_suffix(".bin"), icon_pal)
+    gfx.nclr_to_pal(icon_pal, project_root / "res" / "pokemon" / ".shared" / f"{icon_stem}.pal")
+
+    convert_base_forms(all_contents, gfx, project_root, icon_pal, icon_pal_tbl)
+    convert_alt_forms(all_contents, gfx, project_root, icon_pal, icon_pal_tbl)
+    convert_icon_palettes(project_root, icon_pal_tbl)

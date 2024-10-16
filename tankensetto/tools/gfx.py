@@ -67,6 +67,26 @@ class GFX(abc.ABC):
         extra_args -- list of additional args
         """
 
+    @abc.abstractmethod
+    def ncer_to_json(
+        self,
+        path_to_ncer: pathlib.Path,
+        path_to_json: pathlib.Path,
+    ) -> tools.Result:
+        """
+        Convert an NCER to JSON.
+        """
+
+    @abc.abstractmethod
+    def nanr_to_json(
+        self,
+        path_to_nanr: pathlib.Path,
+        path_to_json: pathlib.Path,
+    ) -> tools.Result:
+        """
+        Convert an NANR to JSON.
+        """
+
 
 class NitroGFX(GFX, tools.Tool):
     """
@@ -117,4 +137,20 @@ class NitroGFX(GFX, tools.Tool):
         args.extend(extra_args)
 
         self.run(args)
+        return tools.Result.SUCCESS
+
+    def ncer_to_json(
+        self,
+        path_to_ncer: pathlib.Path,
+        path_to_json: pathlib.Path,
+    ) -> tools.Result:
+        self.run([path_to_ncer, path_to_json])
+        return tools.Result.SUCCESS
+
+    def nanr_to_json(
+        self,
+        path_to_nanr: pathlib.Path,
+        path_to_json: pathlib.Path,
+    ) -> tools.Result:
+        self.run([path_to_nanr, path_to_json])
         return tools.Result.SUCCESS
