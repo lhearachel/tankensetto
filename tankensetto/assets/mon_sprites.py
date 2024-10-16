@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import dataclasses
+import json
 import os
 import pathlib
 import shutil
@@ -25,9 +26,10 @@ import shutil
 import rich
 
 from tankensetto import info
-from tankensetto.constants import narc_path, pokemon
+from tankensetto.constants import pokemon
+from tankensetto.constants.narc_path import NARCPath
 from tankensetto.tools import gfx, narc
-from tankensetto.util import unpack_narcs
+from tankensetto.util import le_int, sint8, unpack_narcs
 
 
 @dataclasses.dataclass
@@ -149,10 +151,12 @@ def unpack_all(
     narc: narc.NARC,
     rom_filesys_root: pathlib.Path,
     force: bool,
-) -> dict[narc_path.NARCPath, pathlib.Path]:
+) -> dict[NARCPath, pathlib.Path]:
     all_narcs = [
-        narc_path.NARCPath.pokegra,
-        narc_path.NARCPath.otherpoke,
+        NARCPath.pokegra,
+        NARCPath.otherpoke,
+        NARCPath.height,
+        NARCPath.poke_data,
     ]
     return unpack_narcs(narc, all_narcs, rom_filesys_root, force)
 
@@ -172,47 +176,108 @@ def convert_ncgr(gfx: gfx.GFX, ncgr: pathlib.Path, nclr: pathlib.Path, png: path
     )
 
 
-def convert_pokegra(
-    contents: pathlib.Path,
+def convert_sprite(contents: pathlib.Path, gfx: gfx.GFX, dest_root: pathlib.Path, i: int):
+    j = i * 6
+    f_back = contents / f"{NARCPath.pokegra.value.stem}_{j:08}.NCGR"
+    m_back = contents / f"{NARCPath.pokegra.value.stem}_{j+1:08}.NCGR"
+    f_front = contents / f"{NARCPath.pokegra.value.stem}_{j+2:08}.NCGR"
+    m_front = contents / f"{NARCPath.pokegra.value.stem}_{j+3:08}.NCGR"
+    normal_pal = contents / f"{NARCPath.pokegra.value.stem}_{j+4:08}.NCLR"
+    shiny_pal = contents / f"{NARCPath.pokegra.value.stem}_{j+5:08}.NCLR"
+
+    shutil.copy(f_back.with_suffix(".bin"), f_back)
+    shutil.copy(m_back.with_suffix(".bin"), m_back)
+    shutil.copy(f_front.with_suffix(".bin"), f_front)
+    shutil.copy(m_front.with_suffix(".bin"), m_front)
+    shutil.copy(normal_pal.with_suffix(".bin"), normal_pal)
+    shutil.copy(shiny_pal.with_suffix(".bin"), shiny_pal)
+
+    convert_ncgr(gfx, f_back, normal_pal, dest_root / "female_back.png")
+    convert_ncgr(gfx, m_back, normal_pal, dest_root / "male_back.png")
+    convert_ncgr(gfx, f_front, normal_pal, dest_root / "female_front.png")
+    convert_ncgr(gfx, m_front, normal_pal, dest_root / "male_front.png")
+
+    if i == 0:
+        shutil.copy(normal_pal, dest_root / "normal_pal.NCLR")
+        shutil.copy(shiny_pal, dest_root / "shiny_pal.NCLR")
+    else:
+        gfx.nclr_to_pal(normal_pal, dest_root / "normal.pal", bitdepth=8)
+        gfx.nclr_to_pal(shiny_pal, dest_root / "shiny.pal", bitdepth=8)
+
+
+def parse_frames(b: bytes) -> list[dict[str, int]]:
+    return [
+        {
+            "sprite_frame": sint8(b[i]),
+            "frame_delay": sint8(b[i + 1]),
+            "x_shift": sint8(b[i + 2]),
+            "y_shift": sint8(b[i + 3]),
+        }
+        for i in range(0, 40, 4)
+    ]
+
+
+def convert_sprite_data(
+    height_contents: pathlib.Path,
+    poke_data_bin: bytes,
+    dest_root: pathlib.Path,
+    i: int,
+):
+    j = i * 4
+    h_f_back = open(height_contents / f"{NARCPath.height.value.stem}_{j:08}.bin", "rb").read()
+    h_m_back = open(height_contents / f"{NARCPath.height.value.stem}_{j+1:08}.bin", "rb").read()
+    h_f_front = open(height_contents / f"{NARCPath.height.value.stem}_{j+2:08}.bin", "rb").read()
+    h_m_front = open(height_contents / f"{NARCPath.height.value.stem}_{j+3:08}.bin", "rb").read()
+
+    with open(dest_root / "sprite_data.json", "r") as f:
+        sprite_data_json = json.load(f)
+
+    sprite_data_json["back"]["y_offset"]["female"] = le_int(h_f_back)
+    sprite_data_json["back"]["y_offset"]["male"] = le_int(h_m_back)
+    sprite_data_json["front"]["y_offset"]["female"] = le_int(h_f_front)
+    sprite_data_json["front"]["y_offset"]["male"] = le_int(h_m_front)
+
+    j = i * 89
+    sprite_data_json["front"]["cry_delay"] = sint8(poke_data_bin[j])
+    sprite_data_json["front"]["animation"] = poke_data_bin[j + 1]
+    sprite_data_json["front"]["start_delay"] = poke_data_bin[j + 2]
+    sprite_data_json["front"]["frames"] = parse_frames(poke_data_bin[j + 3 : j + 43])
+    sprite_data_json["back"]["cry_delay"] = sint8(poke_data_bin[j + 43])
+    sprite_data_json["back"]["animation"] = poke_data_bin[j + 44]
+    sprite_data_json["back"]["start_delay"] = poke_data_bin[j + 45]
+    sprite_data_json["back"]["frames"] = parse_frames(poke_data_bin[j + 46 : j + 86])
+    sprite_data_json["front"]["addl_y_offset"] = sint8(poke_data_bin[j + 86])
+    sprite_data_json["shadow"]["x_offset"] = sint8(poke_data_bin[j + 87])
+    sprite_data_json["shadow"]["size"] = pokemon.ShadowSize(int(poke_data_bin[j + 88])).name
+
+    with open(dest_root / "sprite_data.json", "w", encoding="utf-8") as f:
+        json.dump(sprite_data_json, f, indent=4, ensure_ascii=False)
+
+
+def convert_base_forms(
+    contents: dict[NARCPath, pathlib.Path],
     gfx: gfx.GFX,
     project_root: pathlib.Path,
 ):
+    """
+    Converts entries for base form sprites and additional sprite data (i.e., height offsets,
+    animation frames, and shadow size).
+    """
     res_pokemon_root = project_root / "res" / "pokemon"
+    pokegra_contents = contents[NARCPath.pokegra]
+    height_contents = contents[NARCPath.height]
+    poke_data_bin_f = contents[NARCPath.poke_data] / f"{NARCPath.poke_data.value.stem}_00000000.bin"
+    poke_data_bin = open(poke_data_bin_f, "rb").read()
+
     rich.print("Converting base form sprites...")
     with info.progress() as p:
         for i, species in p.track(enumerate(pokemon.Species), total=pokemon.MAX_SPECIES):
-            j = i * 6
             mon_root = res_pokemon_root / species
-
-            f_back = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j:08}.NCGR"
-            m_back = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+1:08}.NCGR"
-            f_front = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+2:08}.NCGR"
-            m_front = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+3:08}.NCGR"
-            normal_pal = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+4:08}.NCLR"
-            shiny_pal = contents / f"{narc_path.NARCPath.pokegra.value.stem}_{j+5:08}.NCLR"
-
-            shutil.copy(f_back.with_suffix(".bin"), f_back)
-            shutil.copy(m_back.with_suffix(".bin"), m_back)
-            shutil.copy(f_front.with_suffix(".bin"), f_front)
-            shutil.copy(m_front.with_suffix(".bin"), m_front)
-            shutil.copy(normal_pal.with_suffix(".bin"), normal_pal)
-            shutil.copy(shiny_pal.with_suffix(".bin"), shiny_pal)
-
-            convert_ncgr(gfx, f_back, normal_pal, mon_root / "female_back.png")
-            convert_ncgr(gfx, m_back, normal_pal, mon_root / "male_back.png")
-            convert_ncgr(gfx, f_front, normal_pal, mon_root / "female_front.png")
-            convert_ncgr(gfx, m_front, normal_pal, mon_root / "male_front.png")
-
-            if i == 0:
-                shutil.copy(normal_pal, mon_root / "normal_pal.NCLR")
-                shutil.copy(shiny_pal, mon_root / "shiny_pal.NCLR")
-                continue
-
-            gfx.nclr_to_pal(normal_pal, mon_root / "normal.pal", bitdepth=8)
-            gfx.nclr_to_pal(shiny_pal, mon_root / "shiny.pal", bitdepth=8)
+            convert_sprite(pokegra_contents, gfx, mon_root, i)
+            convert_sprite_data(height_contents, poke_data_bin, mon_root, i)
 
 
-def convert_otherpoke(
+def convert_alt_forms(
     contents: pathlib.Path,
     gfx: gfx.GFX,
     project_root: pathlib.Path,
@@ -223,46 +288,56 @@ def convert_otherpoke(
 
     rich.print("Converting alt form sprites...")
 
-    egg_base = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000132.NCGR"
-    egg_manaphy = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000133.NCGR"
-    egg_base_pal = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000226.NCLR"
-    egg_manaphy_pal = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000227.NCLR"
-    [shutil.copy(f.with_suffix(".bin"), f) for f in [egg_base, egg_manaphy, egg_base_pal, egg_manaphy_pal]]
+    egg_base = contents / f"{NARCPath.otherpoke.value.stem}_00000132.NCGR"
+    egg_manaphy = contents / f"{NARCPath.otherpoke.value.stem}_00000133.NCGR"
+    egg_base_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000226.NCLR"
+    egg_manaphy_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000227.NCLR"
+    shutil.copy(egg_base.with_suffix(".bin"), egg_base)
+    shutil.copy(egg_manaphy.with_suffix(".bin"), egg_manaphy)
+    shutil.copy(egg_base_pal.with_suffix(".bin"), egg_base_pal)
+    shutil.copy(egg_manaphy_pal.with_suffix(".bin"), egg_manaphy_pal)
 
     convert_ncgr(gfx, egg_base, egg_base_pal, egg_root / "front.png")
     convert_ncgr(gfx, egg_manaphy, egg_manaphy_pal, egg_root / "forms" / "manaphy" / "front.png")
     gfx.nclr_to_pal(egg_base_pal, egg_root / "normal.pal", bitdepth=8)
     gfx.nclr_to_pal(egg_manaphy_pal, egg_root / "forms" / "manaphy" / "normal.pal", bitdepth=8)
 
-    sub_back = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000248.NCGR"
-    sub_front = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000249.NCGR"
-    sub_pal = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000250.NCLR"
-    [shutil.copy(f.with_suffix(".bin"), f) for f in [sub_back, sub_front, sub_pal]]
+    sub_back = contents / f"{NARCPath.otherpoke.value.stem}_00000248.NCGR"
+    sub_front = contents / f"{NARCPath.otherpoke.value.stem}_00000249.NCGR"
+    sub_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000250.NCLR"
+    shutil.copy(sub_back.with_suffix(".bin"), sub_back)
+    shutil.copy(sub_front.with_suffix(".bin"), sub_front)
+    shutil.copy(sub_pal.with_suffix(".bin"), sub_pal)
 
     convert_ncgr(gfx, sub_back, sub_pal, shared_root / "substitute_back.png")
     convert_ncgr(gfx, sub_front, sub_pal, shared_root / "substitute_front.png")
     gfx.nclr_to_pal(sub_pal, shared_root / "substitute.pal", bitdepth=8)
 
-    shadows_img = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000251.NCGR"
-    shadows_pal = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_00000252.NCLR"
-    [shutil.copy(f.with_suffix(".bin"), f) for f in [shadows_img, shadows_pal]]
+    shadows_img = contents / f"{NARCPath.otherpoke.value.stem}_00000251.NCGR"
+    shadows_pal = contents / f"{NARCPath.otherpoke.value.stem}_00000252.NCLR"
+    shutil.copy(shadows_img.with_suffix(".bin"), shadows_img)
+    shutil.copy(shadows_pal.with_suffix(".bin"), shadows_pal)
+
     convert_ncgr(gfx, shadows_img, shadows_pal, shared_root / "shadows.png")
     gfx.nclr_to_pal(shadows_pal, shared_root / "shadows.pal", bitdepth=8)
 
     with info.progress() as p:
         for species, forms in p.track(OTHERPOKE_FILES.items()):
-            mon_root = res_pokemon_root / species / 'forms'
+            mon_root = res_pokemon_root / species / "forms"
             mon_shared_pal = None
 
             for form, sprites in forms.items():
                 form_dir = mon_root / form
 
-                back = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_{sprites.back:08}.NCGR"
-                front = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_{sprites.front:08}.NCGR"
-                normal = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_{sprites.normal_pal:08}.NCLR"
-                shiny = contents / f"{narc_path.NARCPath.otherpoke.value.stem}_{sprites.shiny_pal:08}.NCLR"
+                back = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.back:08}.NCGR"
+                front = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.front:08}.NCGR"
+                normal = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.normal_pal:08}.NCLR"
+                shiny = contents / f"{NARCPath.otherpoke.value.stem}_{sprites.shiny_pal:08}.NCLR"
 
-                [shutil.copy(f.with_suffix(".bin"), f) for f in [back, front, normal, shiny]]
+                shutil.copy(back.with_suffix(".bin"), back)
+                shutil.copy(front.with_suffix(".bin"), front)
+                shutil.copy(normal.with_suffix(".bin"), normal)
+                shutil.copy(shiny.with_suffix(".bin"), shiny)
 
                 convert_ncgr(gfx, back, normal, form_dir / "back.png")
                 convert_ncgr(gfx, front, normal, form_dir / "front.png")
@@ -274,28 +349,6 @@ def convert_otherpoke(
                     gfx.nclr_to_pal(shiny, form_dir / "shiny.pal", bitdepth=8)
 
 
-def convert_poke_data(
-    contents: pathlib.Path,
-    project_root: pathlib.Path
-):
-    pass
-
-
-def convert_height(
-    contents: pathlib.Path,
-    project_root: pathlib.Path
-):
-    pass
-
-
-def convert_poke_icon(
-    contents: pathlib.Path,
-    gfx: gfx.GFX,
-    project_root: pathlib.Path
-):
-    pass
-
-
 def extract(
     narc: narc.NARC,
     gfx: gfx.GFX,
@@ -305,8 +358,5 @@ def extract(
 ):
     all_contents = unpack_all(narc, rom_filesys_root, force)
 
-    convert_pokegra(all_contents[narc_path.NARCPath.pokegra], gfx, project_root)
-    convert_otherpoke(all_contents[narc_path.NARCPath.otherpoke], gfx, project_root)
-    convert_poke_data(all_contents[narc_path.NARCPath.poke_data], project_root)
-    convert_height(all_contents[narc_path.NARCPath.height], project_root)
-    convert_poke_icon(all_contents[narc_path.NARCPath.poke_icon], gfx, project_root)
+    convert_base_forms(all_contents, gfx, project_root)
+    convert_alt_forms(all_contents[NARCPath.otherpoke], gfx, project_root)

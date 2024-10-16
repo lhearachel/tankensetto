@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import pathlib
+from typing import Literal
 
 from tankensetto import info
 from tankensetto.constants import narc_path
@@ -67,3 +68,15 @@ def unpack_narcs(
     Returns a mapping of input NARCs to their unpacked contents directories.
     """
     return {np: unpack_narc(narc, np, rom_filesys_root, force, echo) for np in paths}
+
+
+def le_int(b: bytes) -> int:
+    """
+    Short stub func to convert bytes to an int from little Endian.
+    """
+    return int.from_bytes(b, byteorder="little")
+
+
+def sint8(b: int | bytes):
+    i = int(b)
+    return i - 256 if i >= 128 else i

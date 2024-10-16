@@ -517,4 +517,14 @@ class Species(enum.StrEnum):
     arceus = enum.auto()
 
 
+class ShadowSize(enum.IntEnum):
+    """
+    Names are copied from pret/pokeplatinum for compatibility.
+    """
+    SHADOW_SIZE_NONE = 0
+    SHADOW_SIZE_SMALL = enum.auto()
+    SHADOW_SIZE_MEDIUM = enum.auto()
+    SHADOW_SIZE_LARGE = enum.auto()
+
+
 MAX_SPECIES = len(list(Species))
