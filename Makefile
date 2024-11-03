@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 PYTHON3 := python3
 PYTHON3_VER := $(shell python3 -V | cut -d ' ' -f 2 | cut -d '.' -f 1,2)
 PYTHON3_VER_REQ := 3.10
@@ -16,12 +17,12 @@ all: install
 
 include tools.mk
 
-venv:
-	@if [[ ! -f $(VENV_ACTIVATE_FILE) ]]; then \
-		printf "🚧 Creating $(YELLOW)python3$(RESET) venv...\n"; \
-		python3 -m venv $(VIRTUAL_ENV); \
-		printf "✅ Created $(YELLOW)python3$(RESET) venv under $(YELLOW)$(PWD)/$(VIRTUAL_ENV)$(RESET)\n"; \
-	fi;
+$(VENV_ACTIVATE_FILE):
+	@printf "🚧 Creating $(YELLOW)python3$(RESET) venv...\n"
+	@python3 -m venv $(VIRTUAL_ENV)
+	@printf "✅ Created $(YELLOW)python3$(RESET) venv under $(YELLOW)$(PWD)/$(VIRTUAL_ENV)$(RESET)\n"
+
+venv: $(VENV_ACTIVATE_FILE)
 
 install: venv
 	@printf "🚧 Upgrading $(YELLOW)pip$(RESET)...\n"
